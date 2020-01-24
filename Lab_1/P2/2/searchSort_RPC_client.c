@@ -23,6 +23,13 @@ substring_1(char *host)
 	data   *result_2;
 	void   *result_3;
 
+	int array[]={1,4,3,6,4,45,3,75,-12,23,0};
+	myData.key=6;
+	myData.ln=sizeof(array)/sizeof(array[0]);
+	for(int i=0;i<myData.ln;i++){
+		myData.arr[i]=array[i];
+	}
+
 #ifndef	DEBUG
 	clnt = clnt_create (host, SUBSTRING, SUBSTRING_1, "udp");
 	if (clnt == NULL) {
