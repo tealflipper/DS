@@ -5,6 +5,7 @@
  */
 
 #include "subString_RPC.h"
+#include <string.h>
 
 
 void
