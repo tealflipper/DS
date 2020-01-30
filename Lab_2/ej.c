@@ -14,7 +14,7 @@
  MPI_Request mpirReq;
  unsigned int w, x, y, z;
  unsigned char bSalir;
- char scMsg[] = "Este es el mensaje.\n";
+ char scMsg[] = "puto.\n";
  char scRec[100];
  MPI_Status mpisEstado;
  MPI_Init (&iArgc, &pscArgv);
@@ -27,7 +27,7 @@
  for (x=0; x<100000; x++)
  for (y=0; y<1000; y++) z = x + y;
  printf ("Ahora enviaré el mensaje de forma sincrona..\n");
- MPI_Isend (scMsg, w+1, MPI_CHAR, NODO_DESTINO, 1, MPI_COMM_WORLD, &mpirReq);
+ MPI_Isend (scMsg, w+1, MPI_CHAR, NODO_DESTINO, 2, MPI_COMM_WORLD, &mpirReq);
  printf ("El mensaje fue enviado, pero aun no sé si ya se recibio.\n");
  bSalir = FALSE;
  while (!bSalir)
@@ -41,7 +41,7 @@
  {
  scRec[0] = 0;
  printf ("Soy el otro nodo, y estoy en espera de recibir un mensaje.\n");
- MPI_Irecv (scRec, w+1, MPI_CHAR, PRINCIPAL, 1, MPI_COMM_WORLD, &mpirReq);
+ MPI_Irecv (scRec, w+1, MPI_CHAR, PRINCIPAL, 2, MPI_COMM_WORLD, &mpirReq);
  bSalir = FALSE;
  while (!bSalir)
  {
