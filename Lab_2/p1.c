@@ -95,63 +95,8 @@ int main(int iArgc, char *pscArgv[]){
         mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
         MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, prev, prev, MPI_COMM_WORLD, &mpisEstado);
         mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-
       }
     }
-    /*
-    switch (iRank)
-    {
-    case A:
-      
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, C, A, MPI_COMM_WORLD);
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, D, A, MPI_COMM_WORLD);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, C, C, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, D, D, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-
-      printMatrix(myAdyencyMatrix,N,N);
-      break;
-    
-    case B:
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, D, B, MPI_COMM_WORLD);
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, E, B, MPI_COMM_WORLD);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, D, D, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, E, E, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      break;
-
-    case C:
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, A, C, MPI_COMM_WORLD);
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, E, C, MPI_COMM_WORLD);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, A, A, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, E, E, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      break;
-
-    case D:
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, A, D, MPI_COMM_WORLD);
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, B, D, MPI_COMM_WORLD);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, A, A, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, B, B, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      break;
-    
-    case E:
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, B, E, MPI_COMM_WORLD);
-      MPI_Send (myAdyencyMatrix, N*N, MPI_INT, C, E, MPI_COMM_WORLD);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, B, B, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      MPI_Recv(incomingAdyencyMatrix, N*N, MPI_INT, C, C, MPI_COMM_WORLD, &mpisEstado);
-      mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix);
-      break;
-    default:
-      break;
-    }
-    */
   }
   if(iRank==0) printMatrix(myAdyencyMatrix,N,N);
   MPI_Finalize();
