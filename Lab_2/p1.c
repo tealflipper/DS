@@ -13,9 +13,9 @@ typedef enum Node node;
 void printMatrix(int Matrix[N][N],int n,int m){
   for(int i=0;i<n;i++){
     for(int j=0;j<m;j++){
-      printf("%d ",Matrix[i][j]);
+      printf("%d",Matrix[i][j]);
     }
-    printf("\n");
+    printf(" ");
   }
 }
 // my matrix, of n x n op is the node 0<op<=5
@@ -83,7 +83,7 @@ int main(int iArgc, char *pscArgv[]){
   MPI_Init (&iArgc, &pscArgv);
   MPI_Comm_size (MPI_COMM_WORLD, &iSize);
   MPI_Comm_rank (MPI_COMM_WORLD, &iRank);
-  for(int i=A;i<E;i++) if(iRank==i) makeAdyencyMatrix(myAdyencyMatrix,i);
+  for(int i=A;i<=E;i++) if(iRank==i) makeAdyencyMatrix(myAdyencyMatrix,i);
   for(int i=0;i<iteration;i++){
     for (int j=0;j<N;j++){
       if(iRank==j){
@@ -98,6 +98,9 @@ int main(int iArgc, char *pscArgv[]){
       }
     }
   }
-  if(iRank==0) printMatrix(myAdyencyMatrix,N,N);
+
+      printf("%c: ",nodes[iRank]);
+      printMatrix(myAdyencyMatrix,N,N);
+      printf("\n");
   MPI_Finalize();
 }

@@ -28,14 +28,12 @@
  for (y=0; y<1000; y++) z = x + y;
  printf ("Ahora enviaré el mensaje de forma sincrona..\n");
  MPI_Isend (scMsg, w+1, MPI_CHAR, NODO_DESTINO, 2, MPI_COMM_WORLD, &mpirReq);
+ MPI_Isend (scMsg, w+1, MPI_CHAR, 2, 2, MPI_COMM_WORLD, &mpirReq);
+ MPI_Isend (scMsg, w+1, MPI_CHAR, 3, 3, MPI_COMM_WORLD, &mpirReq);
+
+ MPI_Isend (scMsg, w+1, MPI_CHAR, 3, 2, MPI_COMM_WORLD, &mpirReq);
+ 
  printf ("El mensaje fue enviado, pero aun no sé si ya se recibio.\n");
- bSalir = FALSE;
- while (!bSalir)
- {
- MPI_Test (&mpirReq, &iFlag, &mpisEstado);
- if (iFlag) bSalir = TRUE;
- }
- printf ("Ya llego el dato!\n");
  }
  else
  {
