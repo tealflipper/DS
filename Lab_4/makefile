@@ -10,6 +10,7 @@ INC=.
 
 #Archivos
 PROG_01=ex
+out=pp
 maq=hostfile
 #Parametros
 NODES=10
@@ -19,9 +20,9 @@ all: uno
 
 uno:
 	@echo "**************** COMPILADO CODIGO: $(PROG_01) ****************"
-	$(MPICC) $(PAR_I) $(PROG_01).c -o $(PROG_01) -I$(INC)
+	$(MPICC) $(PAR_I) $(PROG_01).c -o $(out) -I$(INC)
 
 rununo:
 	@echo "**************** COMPILADO CODIGO: $(PROG_01) ****************"
-	$(MPICC) $(PAR_I) $(PROG_01).c -o $(PROG_01) -I$(INC)
-	$(MRUN) -np $(NODES) -hostfile $(maq) $(PROG_01)
+	$(MPICC) $(PAR_I) $(PROG_01).c -o $(out) -I$(INC)
+	$(MRUN) -np $(NODES) -hostfile $(maq) $(out)

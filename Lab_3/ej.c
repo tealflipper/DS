@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> 
 #include <mpi.h>
 #define MAX_PROCESOS 20
 #define MASTER 0 /*El nodo maestro será el proceso 0, al igual que en los subgrupos*/
@@ -19,15 +18,17 @@ int main (int iArg, char *spcArgv[])
   int iId, iNProc, i, iIdGroup, iEnvio;
   int siGrupo1[MAX_PROCESOS], iNGrupo1; //Los procesos en el grupo 1 y su número
   int siGrupo2[MAX_PROCESOS], iNGrupo2; //Los procesos en el grupo 2 y su número
-  MPI_Group smpigGrupoGbl;
-  MPI_Group smpigGrupo1, smpigGrupo2;
-  MPI_Comm smpicGrupoComm1, smpicGrupoComm2;
+  //MPI_Group smpigGrupoGbl;
+  //MPI_Group smpigGrupo1, smpigGrupo2;
+  //MPI_Comm smpicGrupoComm1, smpicGrupoComm2;
   
 
+  printf("7\n");
   MPI_Init (&iArg, &spcArgv);
   //Determinamos el número de procesos del grupo global
   MPI_Comm_rank (MPI_COMM_WORLD, &iId); //Para obtener el ID
   MPI_Comm_size (MPI_COMM_WORLD, &iNProc); //Para obtener el número de procesos
+  /* 
   
   if ((iNProc<4)||(iNProc>MAX_PROCESOS))
   { //Necesitamos más procesos, pero no tantos
@@ -56,7 +57,7 @@ int main (int iArg, char *spcArgv[])
     for (i=0; i<iNGrupo2; i++) printf ("%d ", siGrupo2[i]);
     printf ("\n");
   }
-  
+  /*
   MPI_Barrier (MPI_COMM_WORLD); //Esperamos a los nodos
  //Manejador del grupo global
  MPI_Comm_group (MPI_COMM_WORLD, &smpigGrupoGbl);
@@ -122,7 +123,6 @@ int main (int iArg, char *spcArgv[])
  MPI_Group_free (&smpigGrupo2);
  }
  MPI_Barrier (MPI_COMM_WORLD); //Para asegurar la liberación
-  /* 
   */
  MPI_Finalize ();
  return (0);
