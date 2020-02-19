@@ -7,7 +7,6 @@ typedef enum Node node;
 #define iteration 2
 #define N 5
 #define M 2
-#define PRINCIPAL A /*El nodo cero será el principal*/ 
 
 //prints n x m matrix
 void printMatrix(int Matrix[N][N],int n,int m){
@@ -18,47 +17,22 @@ void printMatrix(int Matrix[N][N],int n,int m){
     printf(" ");
   }
 }
+
+int getPrev(int op){
+  return (op==0)?N-1:op-1;
+}
+
+int getNext(int op){
+ return (op==N-1)?0:op+1;
+}
+
 // my matrix, of n x n op is the node 0<op<=5
 void makeAdyencyMatrix(int Matrix[N][N],node op){
   for(int i=0;i<N;i++){ for (int j=0;j<N;j++) Matrix[i][j]=0;}
-
-  switch (op)
-  {
-  case A:
-    Matrix[A][C]=1;
-    Matrix[A][D]=1;
-    Matrix[C][A]=1;
-    Matrix[D][A]=1;
-    break;
-  
-  case B:
-    Matrix[B][D]=1;
-    Matrix[B][E]=1;
-    Matrix[D][B]=1;
-    Matrix[E][B]=1;
-    break;
-  
-  case C:
-    Matrix[C][A]=1;
-    Matrix[C][E]=1;
-    Matrix[A][C]=1;
-    Matrix[E][C]=1;
-    break;
-  case D:
-    Matrix[D][A]=1;
-    Matrix[D][B]=1;
-    Matrix[A][D]=1;
-    Matrix[B][D]=1;
-    break;
-  case E:
-    Matrix[E][B]=1;
-    Matrix[E][C]=1;
-    Matrix[B][E]=1;
-    Matrix[C][E]=1;
-    break;
-  default:
-    break;
-  }
+  Matrix[op][getNext(op)]=1;
+  Matrix[op][getPrev(op)]=1;
+  Matrix[getNext(op)][op]=1;
+  Matrix[getPrev(op)][op]=1;
   
 }
 
@@ -72,18 +46,22 @@ void mixMatrices(int Ma[N][N], int Mb[N][N]){
 }
 
 int main(int iArgc, char *pscArgv[]){
-  int iRank; /*Este es el idenficador de nodo*/
-  int iSize; /*Número total de nodos*/
+  int iRank; 
+  int iSize; 
   int iFlag;
   MPI_Request mpirReq;
   char nodes[5]="ABCDE";
   int myAdyencyMatrix[N][N];
   int incomingAdyencyMatrix[N][N]; 
-  MPI_Status mpisEstado;
   MPI_Init (&iArgc, &pscArgv);
+  MPI_Status mpisEstado;
   MPI_Comm_size (MPI_COMM_WORLD, &iSize);
   MPI_Comm_rank (MPI_COMM_WORLD, &iRank);
-  for(int i=A;i<=E;i++) if(iRank==i) makeAdyencyMatrix(myAdyencyMatrix,i);
+  for(int i=A;i<=E;i++){ 
+    if(iRank==i) {
+      makeAdyencyMatrix(myAdyencyMatrix,i);
+      }
+  }
   for(int i=0;i<iteration;i++){
     for (int j=0;j<N;j++){
       if(iRank==j){

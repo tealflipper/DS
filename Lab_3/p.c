@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-enum Node {A,B,C,D,E,BOSS};
+enum Node {A,B,C,D,E,MASTER};
 typedef enum Node node;
 #define FALSE 0
 #define TRUE 1
-#define iteration 100
+#define iteration 50
 #define N 5
 #define M 2
-
+//#labred063, 64,65,66
 //prints n x m matrix
 void printMatrix(int Matrix[N][N],int n,int m){
   for(int i=0;i<N;i++){
@@ -60,19 +60,20 @@ int main(int iArgc, char *pscArgv[]){
   int iRank; /*Este es el idenficador de nodo*/
   int iSize; /*Número total de nodos*/
   int iFlag[4];
-  int bVal=10;
+  int bVal=0;
 
   unsigned char bSalir;
-  MPI_Request mpirReq[4*N];
+  MPI_Request mpirReq[10];
   char nodes[N]="ABCDE";
   int myAdyencyMatrix[N][N];
   int incomingAdyencyMatrix[N][N][N]; 
-  MPI_Status mpisEstado[5];
+  MPI_Status mpisEstado[10];
   MPI_Init (&iArgc, &pscArgv);
   MPI_Comm_size (MPI_COMM_WORLD, &iSize);
   MPI_Comm_rank (MPI_COMM_WORLD, &iRank);
-  for(int i=A;i<=BOSS;i++) if(iRank==i) makeAdyencyMatrix(myAdyencyMatrix,i);
-  for(int i=0;i<iteration;i++){
+  int i;
+  for(i=A;i<=MASTER;i++) if(iRank==i) makeAdyencyMatrix(myAdyencyMatrix,i);
+  for(i=0;i<iteration;i++){
     // Normal nodes
     //send
     for (int j=0;j<N;j++){
@@ -110,40 +111,96 @@ int main(int iArgc, char *pscArgv[]){
         //MPI_Wait(&mpirReq[3], &mpisEstado[3]);
         mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix[0]);
         mixMatrices(myAdyencyMatrix,incomingAdyencyMatrix[1]);
-        MPI_Isend (myAdyencyMatrix, N*N, MPI_INT, BOSS, 1, MPI_COMM_WORLD, &mpirReq[0]);
-        int temp=0;
-        MPI_Irecv (&temp, 1, MPI_INT, BOSS , 0, MPI_COMM_WORLD, &mpirReq[5]);
-
+        MPI_Isend (myAdyencyMatrix, N*N, MPI_INT, MASTER, 1, MPI_COMM_WORLD, &mpirReq[0]);
+        bSalir = FALSE;
+        while (!bSalir)
+        {
+          MPI_Test (&mpirReq[0], &iFlag[0], &mpisEstado[0]);
+          if (iFlag[0]) bSalir = TRUE;
+        }
+        /*
+        */
+        MPI_Irecv (&bVal, 1, MPI_INT, MASTER , 0, MPI_COMM_WORLD, &mpirReq[5]);
+        while (!bSalir)
+        {
+          MPI_Test (&mpirReq[5], &iFlag[0], &mpisEstado[5]);
+          if (iFlag[0]) bSalir = TRUE;
+        }
       }
     }    
-    //Boss comunicates
+
     
-    if(iRank==BOSS){
-      MPI_Irecv (incomingAdyencyMatrix[0], N*N, MPI_INT, A , 1, MPI_COMM_WORLD, &mpirReq[0]);
-      MPI_Irecv (incomingAdyencyMatrix[1], N*N, MPI_INT, B, 1, MPI_COMM_WORLD, &mpirReq[1]);
-      MPI_Irecv (incomingAdyencyMatrix[2], N*N, MPI_INT, D, 1, MPI_COMM_WORLD, &mpirReq[2]);
-      MPI_Irecv (incomingAdyencyMatrix[3], N*N, MPI_INT, E, 1, MPI_COMM_WORLD, &mpirReq[3]);
+    //MASTER comunicates
+    
+    if(iRank==MASTER){
+      MPI_Irecv (incomingAdyencyMatrix[0], N*N, MPI_INT, A , 1, MPI_COMM_WORLD, &mpirReq[6]);
+      
+      MPI_Irecv (incomingAdyencyMatrix[1], N*N, MPI_INT, B, 1, MPI_COMM_WORLD, &mpirReq[7]);
+      
+      MPI_Irecv (incomingAdyencyMatrix[2], N*N, MPI_INT, D, 1, MPI_COMM_WORLD, &mpirReq[8]);
+      
+      MPI_Irecv (incomingAdyencyMatrix[3], N*N, MPI_INT, E, 1, MPI_COMM_WORLD, &mpirReq[9]);
+      
       int k;
+      for(k=6;k<10;k++){
+        bSalir = FALSE;
+        while (!bSalir)
+        {
+          MPI_Test (&mpirReq[k], &iFlag[1], &mpisEstado[k]);
+          if (iFlag[1]) bSalir = TRUE;
+        }
+      }
+      /*
+      */
+      
       for (k=0;k<N-1;k++){
-        if(!compMatrices(incomingAdyencyMatrix[k],incomingAdyencyMatrix[k+1]))  break;
-        else if(k==N-2) {
-          printf("interaciones: %d\n",i);
+        //printf("i: %d k: %d\n",i,k);
+        if(!compMatrices(incomingAdyencyMatrix[k],incomingAdyencyMatrix[k+1]))  {
+          for(int l=0;l<N;l++) {
+            int t=0;
+            MPI_Isend (&t, 1, MPI_INT, l, 0, MPI_COMM_WORLD, &mpirReq[4]);
+            while (!bSalir)
+            {
+              MPI_Test (&mpirReq[4], &iFlag[1], &mpisEstado[4]);
+              if (iFlag[1]) bSalir = TRUE;
+            }
+          }
+          break;
+        }
+        else if(k==N-3) {
+          printf("ultima interacion: %d\n",i);
           i=iteration;
-          for(int l=0;l<N;l++) MPI_Isend (&i, 1, MPI_INT, l, 0, MPI_COMM_WORLD, &mpirReq[4]);
+        }
+        for(int l=0;l<N;l++) {
+          MPI_Isend (&i, 1, MPI_INT, l, 0, MPI_COMM_WORLD, &mpirReq[4]);
+          while (!bSalir)
+          {
+            MPI_Test (&mpirReq[4], &iFlag[1], &mpisEstado[4]);
+            if (iFlag[1]) bSalir = TRUE;
+          }
         }
       
       }
-
-      
+     /*
+     i=iteration;
+     for(int l=0;l<N;l++) MPI_Isend (&i, 1, MPI_INT, l, 0, MPI_COMM_WORLD, &mpirReq[4]);
+     */ 
     }
+    if(bVal!=0) break;
+    MPI_Barrier(MPI_COMM_WORLD);
   
   }
-  for(int i=0;i<N;i++){
+  int fin=i;
+  for(i=0;i<N;i++){
     if(iRank==i) {
       printf("%c: ",nodes[i]);
       printMatrix(myAdyencyMatrix,N,N);
       printf("\n");
     }
   }
+  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
+  if(iRank==MASTER) printf("Master termina ejecución\n");
+  else printf("ultima iteración: %d\n",bVal);
 }
+
