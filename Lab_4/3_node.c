@@ -82,11 +82,6 @@ ranks[0]=getNeighbors(0);
 for (int i = 1; i<n;i++){
   ranks[i]=getNeighbors(i);
 }
-for(int i=0;i<n;i++){ 
-  printf("[%d]: ",world_rank);
-  for(int j=0;j<n+1;j++) printf("%d ", ranks[i][j]);
-  printf("\n");
-}
 for(int i=0;i<n;i++){
   int elements=getSum(ranks[i],n+1);
   inGroup[i]=(int*)calloc(elements,sizeof(int));
@@ -97,7 +92,14 @@ for(int i=0;i<n;i++){
     }
   }
 }
-
+/*
+for(int i=0;i<n;i++){ 
+  int tmp=(i%STAR==0)?5:3;
+  printf("[%d]: ",world_rank);
+  for(int j=0;j<tmp;j++) printf("%d ", inGroup[i][j]);
+  printf("\n");
+}
+*/
 // Construct a group containing all of the prime ranks in world_group
 MPI_Group my_group[n];
 for(int i=0;i<n;i++) {
@@ -127,7 +129,7 @@ for(int i=0;i<n;i++)
     MPI_Comm_size(prime_comm[i], &prime_size[i]);
   }
 }
-printf("el nodo %d en su grupo %d\n",world_rank,prime_rank[0]);
+for(int i=0;i<n;i++) printf("el nodo %d en el grupo %d %d\n",world_rank,i,prime_rank[i]);
 MPI_Group_free(&world_group);
 for(int i=0;i<n;i++) MPI_Group_free(&my_group[i]);
 //MPI_Comm_free(&prime_comm);
