@@ -43,7 +43,7 @@ int main (int iArg, char *spcArgv[])
   MPI_Group smpigGrupoGbl; //grupo global
   MPI_Group smpigGrupo[N];
   MPI_Comm smpicGrupoComm[N];
-  //for(i=0;i<totalProcesses;i++) iNGrupo[i]=0;
+  for(i=0;i<totalProcesses;i++) iNGrupo[i]=0;
 
 
   MPI_Init (&iArg, &spcArgv);
@@ -63,7 +63,7 @@ int main (int iArg, char *spcArgv[])
     if(neighbors[i]==1){
       siGrupo[iRank][iNGrupo[iRank]++]=i;
     }
-  }/*
+  }
   //Ademas el proceso MASTER estará en ambos grupos
   siGrupo[iRank][iNGrupo[iRank]++]=MASTER;
  
@@ -73,17 +73,17 @@ int main (int iArg, char *spcArgv[])
     for(j=0;j<N;j++){
       printf ("Grupo %d(%d): ",j, iNGrupo[j]);
       for (i=0; i<iNGrupo[j]; i++) printf ("%d ", siGrupo[j][i]); 
+      printf("\n");
     }
-    printf ("\n");
   }
   
   MPI_Barrier (MPI_COMM_WORLD); //Esperamos a los nodos
  //Manejador del grupo global
  MPI_Comm_group (MPI_COMM_WORLD, &smpigGrupoGbl);
  for(i=0;i<N;i++){
-  MPI_Group_incl (smpigGrupoGbl, iNGrupo[i], siGrupo[i], &smpigGrupo1);
-  MPI_Comm_create (MPI_COMM_WORLD, smpigGrupo1, &smpicGrupoComm1);
-  if ((smpicGrupoComm1==MPI_COMM_NULL)&&(iIsInGroup(siGrupo1, iNGrupo1, iRank)))
+  MPI_Group_incl (smpigGrupoGbl, iNGrupo[i], siGrupo[iRank], &smpigGrupo[i]);
+  MPI_Comm_create (MPI_COMM_WORLD, smpigGrupo[i], &smpicGrupoComm[i]);
+  if ((smpicGrupoComm[i]==MPI_COMM_NULL)&&(iIsInGroup(siGrupo[iRank], iNGrupo[i], iRank)))
   { //Si esta en el grupo y no se pudo crear
     printf ("Error en comunicadores Grupo 1, nodo %d.\n", iRank);
     MPI_Finalize ();
@@ -100,51 +100,34 @@ int main (int iArg, char *spcArgv[])
  return (0);
  }
  */
+  for(i=0;i<N;i++) MPI_Comm_rank (smpicGrupoComm[i], &iIdGroup);
+  printf ("Nodo %d, en el grupo soy %d, quedo a la espera\n", iRank, iIdGroup);
+  for(i=0;i<N;i++){
+    if(iRank==i){
+      if (iIdGroup==MASTER)
+      { //El MASTER envia
+        iEnvio = 100; 
+        MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm[i]);
+      }
+      else
+      { //Los demás reciben
+        MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm[i]);
+        printf ("Soy %d global, pero en el grupo 1 soy %d, recibi: %d\n", iRank, iIdGroup, iEnvio);
+      }
+    } 
+  }
 
- if (iRank%2) MPI_Comm_rank (smpicGrupoComm1, &iIdGroup);
- else MPI_Comm_rank (smpicGrupoComm2, &iIdGroup);
- printf ("Nodo %d, en el grupo soy %d, quedo a la espera\n", iRank, iIdGroup);
- if (iRank%2)
- { //Separamos los grupos
- if (iIdGroup==MASTER)
- { //El MASTER envia
- iEnvio = 100; 
- MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm1);
- }
- else
- { //Los demás reciben
- MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm1);
- printf ("Soy %d global, pero en el grupo 1 soy %d, recibi: %d\n", iRank, iIdGroup, iEnvio);
- }
- }
- else
- {
- if (iIdGroup==MASTER)
- { //El MASTER envia
- iEnvio = 200;
- MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm2);
- }
- else
- { //Los demás reciben
- MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm2);
- printf ("Soy %d global, pero en el grupo 2 soy %d, recibi: %d\n", iRank, iIdGroup, iEnvio);
- }
- }
  usleep ((iRank+1)*100000);
  MPI_Barrier (MPI_COMM_WORLD); //Para asegurar la creacion
 
- if ((iRank%2)||(iRank==MASTER))
- { //Todos liberan su respectivo grupo
- printf ("Nodo %d liberando grupo 1\n", iRank);
- MPI_Comm_free (&smpicGrupoComm1);
- MPI_Group_free (&smpigGrupo1);
- }
- if ((!(iRank%2))||(iRank==MASTER))
- { //Todos liberan su respectivo grupo
- printf ("Nodo %d liberando grupo 2\n", iRank);
- MPI_Comm_free (&smpicGrupoComm2);
- MPI_Group_free (&smpigGrupo2);
- }
+  for(i=0;i<N;i++){
+    if(iRank==i || iRank==MASTER){
+      //Todos liberan su respectivo grupo
+      printf ("Nodo %d liberando grupo 1\n", iRank);
+      MPI_Comm_free (&smpicGrupoComm[i]);
+      MPI_Group_free (&smpigGrupo[i]);
+    }
+  }
  MPI_Barrier (MPI_COMM_WORLD); //Para asegurar la liberación
   /* 
   */
