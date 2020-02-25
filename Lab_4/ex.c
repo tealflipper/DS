@@ -2,135 +2,101 @@
 #include <stdlib.h>
 #include <unistd.h> 
 #include <mpi.h>
-#define N 25
-#define STAR 4 // nodes in star topology network
-#define MASTER 24 /*El nodo maestro será el ultimo proceso, al igual que en los subgrupos*/
-#define TRUE 1
-#define FALSE 0
+#define NUM_NEIGHBORS 3
 
-int iIsInGroup (int *piGroup, int iLenGroup, int iRank){
-  int i;
-  for (i=0; i<iLenGroup; i++) 
-  if (iRank==piGroup[i]) return (TRUE);
-  return (FALSE);
-}
+int * getNeighbors2(int iRank){
+  int localRank=iRank%4;
+  int n=(localRank==0)?5:1;
+  int* neighbors=(int*)calloc(n,sizeof(int));
+  for(int i=0;i<n;i++){
+    if(localRank==0){//6 indices
+      int prev=(iRank==0)? 20:iRank-4;
+      int next=(iRank==20)? 0: iRank+4;
+      neighbors[0]=prev;
+      neighbors[1]=next;
+      for (int i=2;i<6;i++){
+        neighbors[i]=iRank+i-1;
+      }
 
-void getNeighbors(int iRank, int neighbors[N]){
-  int lastNode=(N-1-STAR);
-  for(int i=0;i<N;i++) neighbors[i]=0;
-  int localRank=iRank%STAR;
-  if(localRank==0){
-    int prev=(iRank==0)? 20:iRank-4;
-    int next=(iRank==lastNode)? 0: iRank+4;
-    neighbors[prev]=1;
-    neighbors[next]=1;
-    for (int i=1;i<=3;i++){
-      neighbors[iRank+i]=1;
     }
+    else neighbors[i]=iRank-localRank;
   }
-  else neighbors[iRank-localRank]=1;
-  //Para poder agregar nodo maestro
-  //neighbors[MASTER]=1;
+  return neighbors;
 }
 
-int main (int iArg, char *spcArgv[])
+int main(int argc, char **argv)
 {
-
-  int iRank, totalProcesses, i, j, iIdGroup, iEnvio;
-  int siGrupo[N][N], iNGrupo[N]; //procesos en grupos: siGrupo[Grupo][idGroupo] y numero de procesos en grupo: iNGrupo[group]
-  int visitado=-1;
-  int neighbors[N];
-  MPI_Group smpigGrupoGbl; //grupo global
-  MPI_Group smpigGrupo[N];
-  MPI_Comm smpicGrupoComm[N];
-  for(i=0;i<totalProcesses;i++) iNGrupo[i]=0;
-
-
-  MPI_Init (&iArg, &spcArgv);
-  //Determinamos el número de procesos del grupo global
-  MPI_Comm_rank (MPI_COMM_WORLD, &iRank); //Para obtener el ID
-  MPI_Comm_size (MPI_COMM_WORLD, &totalProcesses); //Para obtener el número de procesos
-  
-  if ((totalProcesses<4)||(totalProcesses>N))
-  { //Necesitamos más procesos, pero no tantos
-    MPI_Finalize ();
-    return (0);
-  }
-  //crear lista de nodos vecinos
-  getNeighbors(iRank,neighbors);
-  //crear grupo con vecinos del nodo
-  for(i=0;i<totalProcesses;i++){
-    if(neighbors[i]==1){
-      siGrupo[iRank][iNGrupo[iRank]++]=i;
+    // Iniciando programa de MPI
+    MPI_Init(&argc, &argv);
+    int world_rank, world_size,visited=-1,father=-1;
+    // Manejador del grupo global
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); //Para obtener el ID/
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size); //sPara obtener el número de procesos/
+    int n=(world_rank%4==0)?5:1;
+    // Inicializo mis variables
+    int visitado = 0;
+    // Obtengo mis vecinos
+    int *neighbors = getNeighbors2(world_rank);
+    if (world_rank != world_size - 1)
+    {
+        
+        printf("Soy %d y mis vecinos son ", world_rank);
+        for (int i = 0; i < n; i++)
+            printf("%d ", neighbors[i]);
+        printf("\n");
     }
-  }
-  //Ademas el proceso MASTER estará en ambos grupos
-  siGrupo[iRank][iNGrupo[iRank]++]=MASTER;
- 
-  if (iRank==MASTER)
-  {
-    printf ("Hay %d nodos, repartidos:\n", totalProcesses);
-    for(j=0;j<N;j++){
-      printf ("Grupo %d(%d): ",j, iNGrupo[j]);
-      for (i=0; i<iNGrupo[j]; i++) printf ("%d ", siGrupo[j][i]); 
-      printf("\n");
-    }
-  }
-  
-  MPI_Barrier (MPI_COMM_WORLD); //Esperamos a los nodos
- //Manejador del grupo global
- MPI_Comm_group (MPI_COMM_WORLD, &smpigGrupoGbl);
- for(i=0;i<N;i++){
-  MPI_Group_incl (smpigGrupoGbl, iNGrupo[i], siGrupo[iRank], &smpigGrupo[i]);
-  MPI_Comm_create (MPI_COMM_WORLD, smpigGrupo[i], &smpicGrupoComm[i]);
-  if ((smpicGrupoComm[i]==MPI_COMM_NULL)&&(iIsInGroup(siGrupo[iRank], iNGrupo[i], iRank)))
-  { //Si esta en el grupo y no se pudo crear
-    printf ("Error en comunicadores Grupo 1, nodo %d.\n", iRank);
-    MPI_Finalize ();
-    return (0);
-  }
- }
- /*
- MPI_Group_incl (smpigGrupoGbl, iNGrupo2, siGrupo2, &smpigGrupo2);
- MPI_Comm_create (MPI_COMM_WORLD, smpigGrupo2, &smpicGrupoComm2);
- if ((smpicGrupoComm2==MPI_COMM_NULL)&&(iIsInGroup(siGrupo2, iNGrupo2, iRank)))
- { //Si esta en el grupo y no se pudo crear
- printf ("Error en comunicadores Grupo 2, nodo %d.\n", iRank);
- MPI_Finalize ();
- return (0);
- }
- */
-  for(i=0;i<N;i++) MPI_Comm_rank (smpicGrupoComm[i], &iIdGroup);
-  printf ("Nodo %d, en el grupo soy %d, quedo a la espera\n", iRank, iIdGroup);
-  for(i=0;i<N;i++){
-    if(iRank==i){
-      if (iIdGroup==MASTER)
-      { //El MASTER envia
-        iEnvio = 100; 
-        MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm[i]);
-      }
-      else
-      { //Los demás reciben
-        MPI_Bcast (&iEnvio, 1, MPI_INT, MASTER, smpicGrupoComm[i]);
-        printf ("Soy %d global, pero en el grupo 1 soy %d, recibi: %d\n", iRank, iIdGroup, iEnvio);
-      }
-    } 
-  }
 
- usleep ((iRank+1)*100000);
- MPI_Barrier (MPI_COMM_WORLD); //Para asegurar la creacion
+    // Código para proceso 0
+    // Inicia inundación
+    if (world_rank == 0)
+    {
+        visitado = 1;
+        // Envió mi id a mis vecinos
+        for (int i = 0; i < n; i++)
+            MPI_Send(&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
 
-  for(i=0;i<N;i++){
-    if(iRank==i || iRank==MASTER){
-      //Todos liberan su respectivo grupo
-      printf ("Nodo %d liberando grupo 1\n", iRank);
-      MPI_Comm_free (&smpicGrupoComm[i]);
-      MPI_Group_free (&smpigGrupo[i]);
+        // No tengo padre
+        int padre = -1;
+        // Envio mi padre al maestro
+        MPI_Send(&padre, 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD);
+        // Espero Recibir array de padres
+        int padres[world_size - 1];
+        MPI_Recv(&padres[0], world_size - 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        // Ya tengo los padres, ahora los imprimo
+        for (int i = 0; i < world_size - 1; i++)
+            printf("Proceso %d, mi padre es %d\n", i, padres[i]);
     }
-  }
- MPI_Barrier (MPI_COMM_WORLD); //Para asegurar la liberación
-  /* 
-  */
- MPI_Finalize ();
- return (0);
- } 
+
+    // Código para procesos normales
+    else if (world_rank < world_size - 1)
+    {
+        // Recibo de mi padre
+        int padre;
+        MPI_Recv(&padre, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // Envió mi id a mis vecinos excepto a mi padre
+        for (int i = 0; i < n; i++)
+            if (neighbors[i] != padre)
+                MPI_Send(&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
+
+        visitado = 1;
+        // Envio mi padre al maestro
+        MPI_Send(&padre, 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD);
+        // Recibo array de padres para terminar
+        int padres[world_size - 1];
+        MPI_Recv(&padres[0], world_size - 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+    else
+    {
+        // Recibiendo padres
+        int padres[world_size - 1];
+        for (int i = 0; i < world_size - 1; i++)
+            MPI_Recv(&padres[i], 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        // Enviando a procesos los padres
+        for (int i = 0; i < world_size - 1; i++)
+            MPI_Send(&padres[0], world_size - 1, MPI_INT, i, 2, MPI_COMM_WORLD);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
