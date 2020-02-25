@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     int *neighbors = getNeighbors(world_rank);
     MPI_Barrier(MPI_COMM_WORLD);
     while(!visitado){
-        // Código para proceso 0
+        // Código para proceso 2
         // Inicia inundación
         if (world_rank == 2)
         {
