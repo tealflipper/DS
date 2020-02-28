@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h> 
 #include <mpi.h>
-
+#define TRUE 1
+#define FALSE 0
 int * getNeighbors(int iRank){
   int localRank=iRank%4;
   int n=(localRank==0)?5:1;
@@ -43,8 +44,9 @@ int main(int argc, char **argv)
         // Inicia inundación
         if (world_rank == 2)
         {
-            visitado = 1;
+            visitado = TRUE;
             // Envió mi id a mis vecinos
+            //broadcast
             for (int i = 0; i < n; i++)
                 MPI_Send(&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
 
