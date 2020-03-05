@@ -134,11 +134,8 @@ int main(int iArgc, char *pscArgv[]){
     
     if(iRank==MASTER){
       MPI_Irecv (incomingAdyencyMatrix[0], N*N, MPI_INT, A , 1, MPI_COMM_WORLD, &mpirReq[6]);
-      
-      MPI_Irecv (incomingAdyencyMatrix[1], N*N, MPI_INT, B, 1, MPI_COMM_WORLD, &mpirReq[7]);
-      
+      MPI_Irecv (incomingAdyencyMatrix[1], N*N, MPI_INT, B, 1, MPI_COMM_WORLD, &mpirReq[7]);      
       MPI_Irecv (incomingAdyencyMatrix[2], N*N, MPI_INT, D, 1, MPI_COMM_WORLD, &mpirReq[8]);
-      
       MPI_Irecv (incomingAdyencyMatrix[3], N*N, MPI_INT, E, 1, MPI_COMM_WORLD, &mpirReq[9]);
       
       int k;
@@ -154,7 +151,6 @@ int main(int iArgc, char *pscArgv[]){
       */
       
       for (k=0;k<N-1;k++){
-        //printf("i: %d k: %d\n",i,k);
         if(!compMatrices(incomingAdyencyMatrix[k],incomingAdyencyMatrix[k+1]))  {
           for(int l=0;l<N;l++) {
             int t=0;

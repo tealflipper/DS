@@ -1,0 +1,3 @@
+**************** COMPILADO CODIGO: ex ****************
+mpicc -Wall -lm ex.c -o pp -I.
+mpirun -np 25 -hostfile hostfile pp

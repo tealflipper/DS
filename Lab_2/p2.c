@@ -73,7 +73,6 @@ int main(int iArgc, char *pscArgv[]){
         int prev=getPrev(j);
         int next=getNext(j);
         iFlag[3]=0,iFlag[2]=0;
-        //printf("prev: %d, next: %d\n",prev,next);
         MPI_Isend (myAdyencyMatrix, N*N, MPI_INT, prev, 1, MPI_COMM_WORLD, &mpirReq[0]);
         MPI_Isend (myAdyencyMatrix, N*N, MPI_INT, next, 1, MPI_COMM_WORLD, &mpirReq[1]);
         for(int k=0;k<=1;k++){

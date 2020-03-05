@@ -9,11 +9,11 @@ PAR_LIB= -c -Wall -shared
 INC=.
 
 #Archivos
-PROG_01=ex
+PROG_01=p
 out=pp
 maq=hostfile
 #Parametros
-NODES=25
+NODES=24
 
 #Procesos
 all: uno
@@ -22,7 +22,7 @@ uno:
 	@echo "**************** COMPILADO CODIGO: $(PROG_01) ****************"
 	$(MPICC) $(PAR_I) $(PROG_01).c -o $(out) -I$(INC)
 
-rununo:
+run:
 	@echo "**************** COMPILADO CODIGO: $(PROG_01) ****************"
 	$(MPICC) $(PAR_I) $(PROG_01).c -o $(out) -I$(INC)
 	$(MRUN) -np $(NODES) -hostfile $(maq) $(out)
