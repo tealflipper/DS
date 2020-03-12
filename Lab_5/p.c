@@ -53,7 +53,7 @@ int main(int argc, char **argv)
   MPI_Barrier(MPI_COMM_WORLD);
   // Código para proceso 2
   // Inicia inundación
-  if (world_rank == 2){       
+  if (world_rank == 0){       
     //nodo visitado por fuerza externa
       visitado = TRUE;
       // No tengo padre
@@ -62,22 +62,23 @@ int main(int argc, char **argv)
       mis_padres[mi_nodo.rango]=mi_nodo.padre;
       //mandar información del nodo actual a vecinos
       //manda su nodo
-      for (int i = 0; i < n; i++)
+      for (int i = 0; i < n; i++){
         MPI_Send(&mi_nodo, 2, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
+        //printf("Nodo %d mando mensaje a %d\n", world_rank, neighbors[i]);
+
+      }
       mis_padres[mi_nodo.rango]=mi_nodo.padre;
-      printf("Nodo %d mando mensaje\n", world_rank);
     
     
     // Espero Recibir dato de padres de mis vecinos
     for (int i = 0; i < n; i++){
+      //printf("%d recibe de %d con padre \n",world_rank,neighbors[i]);
       MPI_Recv(&mensaje, 2, MPI_INT, neighbors[i], 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      printf("%d recibe de %d con padre \n",world_rank,neighbors[i]);
       mis_padres[mensaje.rango]=mensaje.padre;
     }
     
     // Ya tengo los padres, ahora los imprimo
-    for (int i = 0; i < N - 1; i++)
-      printf("Proceso %d, mi padre es %d\n", i, mis_padres[i]);            
+                
   }
   // Código para procesos normales
   else if (world_rank < N){
@@ -86,33 +87,38 @@ int main(int argc, char **argv)
     mi_nodo.rango=world_rank;
     //recibe padre
     MPI_Recv(&mensaje, 2, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    printf("Nodo %d recibe mensaje de %d con padre %d\n", world_rank, mensaje.rango,mensaje.padre);
+    //printf("Nodo %d recibe mensaje de %d con padre %d\n", world_rank, mensaje.rango,mensaje.padre);
     mis_padres[mensaje.rango]=mensaje.padre;
     // Nodo no visitado
-    if(!visitado){
+    if(visitado){
+      // Envio retroalimentación a mi padre 
+      
+      for(int i=0;i<n;i++){
+        //printf("%d recibe retro de %d\n",world_rank,neighbors[i]);
+        MPI_Recv(&mensaje, 2, MPI_INT, neighbors[i], 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      }
+    }else {//nodo visitado
       visitado = 1;
       mi_nodo.padre=mensaje.rango;
       mis_padres[mi_nodo.rango]=mi_nodo.padre;
       for (int i = 0; i < n; i++){
-        printf("%d manda mensaje a %i\n", world_rank,neighbors[i]);
         MPI_Send(&mi_nodo, 2, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
+        //printf("%d manda mensaje a %i\n", world_rank,neighbors[i]);
       }
-    }else {//nodo visitado
-      // Envio retroalimentación a mi padre 
-      printf("%d manda retro a %i\n", world_rank,mi_nodo.padre);
+      //printf("%d manda retro a %i\n", world_rank,mi_nodo.padre);
       MPI_Send(&mi_nodo, 2, MPI_INT, mi_nodo.padre, 2, MPI_COMM_WORLD);
-      for(int i=0;i<n;i++){
-        printf("%d recibe retro de %d\n",world_rank,neighbors[i]);
-        MPI_Recv(&mensaje, 2, MPI_INT, neighbors[i], 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-      }
+      
     }
     // Recibo retroalimentación para terminar
-//    for (int i = 0; i < N - 1; i++)
-//      printf("Proceso %d, mi padre es %d\n", i, mis_padres[i]);  
+    
   } 
   
   MPI_Barrier(MPI_COMM_WORLD);
-  
+  printf("proceso %d:   ",world_rank);
+    for (int i = 0; i < N - 1; i++)
+      if(mis_padres[i]!=-2)  printf("[%d] %d ",i, mis_padres[i]);
+  printf("\n\n");
+  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
   return 0;
 }
