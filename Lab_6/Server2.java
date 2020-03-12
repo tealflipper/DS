@@ -8,13 +8,12 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
 //server implements object's methods
-public class Server1 implements Stack{
+public class Server2 implements Stack{
 
+  private ArrayList<Object> stack = new ArrayList <>();
   int stackSize;
-  private ArrayList<Object> stack;
   //constructor
-  public Server1 (){
-    stack = new ArrayList <>();
+  public Server2 (){
     stackSize=stack.size();
   }
 
@@ -45,7 +44,7 @@ public class Server1 implements Stack{
   public static void main(String args[]){
     try {
       //create remote object
-      Server1 obj=new Server1();
+      Server2 obj=new Server2();
       //export remote object to a stub
       Stack stub=(Stack) UnicastRemoteObject.exportObject(obj,0);
       // Bind the remote object's stub in the registry
