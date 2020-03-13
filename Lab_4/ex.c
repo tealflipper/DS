@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 {
     // Iniciando programa de MPI
     MPI_Init(&argc, &argv);
-    int world_rank, world_size;
+    int world_rank, world_size,bSalir;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); //Para obtener el ID/
     MPI_Comm_size(MPI_COMM_WORLD, &world_size); //sPara obtener el número de procesos/
     int n=(world_rank%4==0)?5:1;
@@ -39,6 +39,9 @@ int main(int argc, char **argv)
     // Obtengo vecinos
     int *neighbors = getNeighbors(world_rank);
     while(!visitado){
+        MPI_Request mpirReq;
+            int iFlag=0;
+            MPI_Status mpisEstado;
         // Código para proceso 2
         // Inicia inundación
         if (world_rank == 2)
