@@ -121,7 +121,7 @@ main (int argc, char *argv[])
 	char *host;
 	int op=0;
 	if (argc < 3) {
-		printf ("usage: %s server_host, option (1: subtring, 2: search, 3: sort, 4: factorial)\n", argv[0]);
+		printf ("usage: %s server_host, option\n", argv[0]);
 		exit (1);
 	}
 	host = argv[1];

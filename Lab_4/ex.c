@@ -43,20 +43,12 @@ int main(int argc, char **argv)
         // Inicia inundación
         if (world_rank == 2)
         {
-            // Envio mi id a mis vecinos
-            MPI_Request mpirReq;
-            int iFlag=0;
-            MPI_Status mpisEstado;
-            int bSalir;
-            for (int i = 0; i < n; i++){
-                MPI_Isend (&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD, &mpirReq);
-                bSalir = FALSE;
-                while (!bSalir)
-                {
-                    MPI_Test (&mpirReq, &iFlag, &mpisEstado);
-                    if (iFlag) bSalir = TRUE;
-                }
-            }
+            visitado = TRUE;
+            // Envió mi id a mis vecinos
+            //broadcast
+            for (int i = 0; i < n; i++)
+                MPI_Send(&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
+
             // No tengo padre
             int padre = -1;
             // Envio mi padre al maestro
