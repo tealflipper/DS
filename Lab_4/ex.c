@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h> 
 #include <mpi.h>
-
+#define TRUE 1
+#define FALSE 0
 int * getNeighbors(int iRank){
   int localRank=iRank%4;
   int n=(localRank==0)?5:1;
@@ -37,63 +38,127 @@ int main(int argc, char **argv)
     int visitado = 0;
     // Obtengo vecinos
     int *neighbors = getNeighbors(world_rank);
-    MPI_Barrier(MPI_COMM_WORLD);
     while(!visitado){
         // Código para proceso 2
         // Inicia inundación
         if (world_rank == 2)
         {
-            visitado = 1;
-            // Envió mi id a mis vecinos
-            for (int i = 0; i < n; i++)
-                MPI_Send(&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
-
+            // Envio mi id a mis vecinos
+            MPI_Request mpirReq;
+            int iFlag=0;
+            MPI_Status mpisEstado;
+            int bSalir;
+            for (int i = 0; i < n; i++){
+                MPI_Isend (&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD, &mpirReq);
+                bSalir = FALSE;
+                while (!bSalir)
+                {
+                    MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                    if (iFlag) bSalir = TRUE;
+                }
+            }
             // No tengo padre
             int padre = -1;
             // Envio mi padre al maestro
-            MPI_Send(&padre, 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD);
+            MPI_Isend (&padre, 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, &mpirReq);
+            bSalir = FALSE;
+            while (!bSalir)
+            {
+                MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                if (iFlag) bSalir = TRUE;
+            }
+
             // Espero Recibir array de padres
             int padres[world_size - 1];
-            MPI_Recv(&padres[0], world_size - 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            // Ya tengo los padres, ahora los imprimo
+            MPI_Irecv (&padres[0], world_size - 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, &mpirReq);
+            bSalir = FALSE;
+            while (!bSalir)
+            {
+                MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                if (iFlag) bSalir = TRUE;
+            }
+            visitado = 1;
             for (int i = 0; i < world_size - 1; i++)
-                printf("Proceso %d, mi padre es %d\n", i, padres[i]);
-            
+            printf("Proceso %d, mi padre es %d\n", i, padres[i]);
         
         }
-
         // Código para procesos normales
         else if (world_rank < world_size - 1)
         {
+            visitado = 1;
+            MPI_Request mpirReq;
+            int iFlag=0;
+            MPI_Status mpisEstado;
+            int bSalir;
             // Recibo de mi padre
             int padre;
-            MPI_Recv(&padre, 1, MPI_INT, MPI_ANY_SOURCE, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            // Envió mi id a mis vecinos excepto a mi padre
+            MPI_Irecv (&padre, 1, MPI_INT, MPI_ANY_SOURCE, 2 , MPI_COMM_WORLD, &mpirReq);
+            //espera que se reciba padre
+            bSalir = FALSE;
+            while (!bSalir)
+            {
+                MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                if (iFlag) bSalir = TRUE;
+            }
+            // Envio mi id a mis vecinos excepto a mi padre
             for (int i = 0; i < n; i++)
                 if (neighbors[i] != padre)
-                    MPI_Send(&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD);
-
-            visitado = 1;
-            // Envio mi padre al maestro
-            MPI_Send(&padre, 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD);
-            // Recibo array de padres para terminar
-            int padres[world_size - 1];
-            MPI_Recv(&padres[0], world_size - 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        }
+                    MPI_Isend (&world_rank, 1, MPI_INT, neighbors[i], 1, MPI_COMM_WORLD, &mpirReq);
+                    bSalir = FALSE;
+                    while (!bSalir)
+                    {
+                        MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                        if (iFlag) bSalir = TRUE;
+                    }   
+                    visitado = TRUE;
+                    // Envio mi padre al maestro
+                    MPI_Isend (&padre, 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, &mpirReq);
+                    bSalir = FALSE;
+                    while (!bSalir)
+                    {
+                        MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                        if (iFlag) bSalir = TRUE;
+                    }
+                    // Recibo array de padres para terminar
+                    int padres[world_size - 1];
+                    MPI_Irecv (&padres[0], world_size - 1, MPI_INT, world_size - 1, 2, MPI_COMM_WORLD, &mpirReq);
+                    bSalir = FALSE;
+                    while (!bSalir)
+                    {
+                        MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                        if (iFlag) bSalir = TRUE;
+                    }}
         else
         {
+            MPI_Request mpirReq;
+            int iFlag=0;
+            MPI_Status mpisEstado;
+            int bSalir;
             // Recibiendo padres
             int padres[world_size - 1];
             for (int i = 0; i < world_size - 1; i++)
-                MPI_Recv(&padres[i], 1, MPI_INT, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Irecv (&padres[i], 1, MPI_INT, i, 2, MPI_COMM_WORLD, &mpirReq);
+            for (int i = 0; i < world_size - 1; i++){
+                bSalir = FALSE;
+                while (!bSalir)
+                {
+                    MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                    if (iFlag) bSalir = TRUE;
+                }
+            }
             // Enviando a procesos los padres
             for (int i = 0; i < world_size - 1; i++)
-                MPI_Send(&padres[0], world_size - 1, MPI_INT, i, 2, MPI_COMM_WORLD);
-            visitado =1;
+                MPI_Isend (&padres[0], world_size - 1, MPI_INT, i, 2, MPI_COMM_WORLD, &mpirReq);
+            for (int i = 0; i < world_size - 1; i++){
+                bSalir = FALSE;
+                while (!bSalir)
+                {
+                    MPI_Test (&mpirReq, &iFlag, &mpisEstado);
+                    if (iFlag) bSalir = TRUE;
+                }
+            }
         }
     }   
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
     return 0;
 }
