@@ -14,11 +14,17 @@ public class Client2{
       //find remote object in host
       Stack stub = (Stack) reg.lookup("Stack");
       System.out.println("reviso si la pila esta vacia: " + stub.isEmpty());
-      Object res=stub.top();
-      System.out.println("response: " + res);
+      if(stub.isEmpty()){
+        System.out.println("La pila esta vacia");
+      }else{
+        System.out.println("Vacio la pila ");
+        while(!stub.isEmpty()){
+        Object res=stub.pop();
+        System.out.println("response: " + res);
+        }
+      }
 
       
-      while(true);
     } catch (Exception e) {
       //TODO: handle exception
       System.err.println("Client exception: " + e.toString());

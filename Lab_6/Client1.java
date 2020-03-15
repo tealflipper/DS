@@ -15,8 +15,7 @@ public class Client1{
       Registry reg =LocateRegistry.getRegistry(host);
       //find remote object in host
       Stack stub1 = (Stack) reg.lookup("Stack");
-      if(args.length< 2) reg =LocateRegistry.getRegistry(host2);
-      Stack stub2 = (Stack) reg.lookup("Stack");
+      Stack2 stub2 = (Stack2) reg.lookup("Stack2");
       Integer a=0;
       Double b=2.5;
       Character c='a';
@@ -25,7 +24,7 @@ public class Client1{
       stub1.push(c);
       System.out.println("Cliente 1 subio a la pila 1: "+a);
       System.out.println("Cliente 1 subio a la pila 1: "+b);
-      System.out.println("Cliente 1 subio a la pila 1: "+c);
+      System.out.println("Cliente 1 subio a la pila 1: "+c+"\n");
       a=1;
       b=3.5;
       c='d';
@@ -34,7 +33,7 @@ public class Client1{
       stub2.push(c);
       System.out.println("Cliente 1 subio a la pila 2: "+a);
       System.out.println("Cliente 1 subio a la pila 2: "+b);
-      System.out.println("Cliente 1 subio a la pila 2: "+c);
+      System.out.println("Cliente 1 subio a la pila 2: "+c+"\n");
       Object res=(Character)stub2.pop();
       System.out.println("saco "+res+" de la pila 2");
       res=(Double)stub2.pop();
@@ -43,9 +42,8 @@ public class Client1{
       System.out.println("saco "+res+" de la pila 2");
       System.out.println("reviso si la pila 1 esta vacia: " + stub1.isEmpty());
       System.out.println("reviso si la pila 2 esta vacia: " + stub2.isEmpty());
-      res=stub2.top() ;
-      System.out.println("saco "+res+" de la pila 2");
-      while(true);
+      System.out.println("Cliente 1 espera a que se vacie la pila 1");
+      while(!stub1.isEmpty());
     } catch (Exception e) {
       //TODO: handle exception
       System.err.println("Client exception: " + e.toString());

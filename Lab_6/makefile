@@ -9,6 +9,7 @@ JAVA=java
 
 #Archivos
 SERVER_01=Server1
+SERVER_02=Server2
 CLIENT_01=Client1
 CLIENT_02=Cliente2
 ALL=*
@@ -21,11 +22,24 @@ uno:
 	@echo "**************** COMPILADO CODIGO: $(SERVER_01) $(CLIENT_01) $(CLIENT_02) ****************"
 	$(JAVAC) $(ALL).java
 
+startRunservers:
+	@echo "**************** COMPILADO CODIGO ****************"
+	$(JAVAC) $(ALL).java
+	@echo "**************** Levantando registro ****************"
+	rmiregistry &
+	@echo "**************** Levantando servidor ****************"
+	$(JAVA) $(SERVER_01) &
+	$(JAVA) $(SERVER_02) &
+
+runservers:
+	@echo "**************** COMPILADO CODIGO ****************"
+	$(JAVAC) $(ALL).java
+	@echo "**************** Levantando servidor ****************"
+	$(JAVA) $(SERVER_01) &
+	$(JAVA) $(SERVER_02) &
+
 run:
 	@echo "**************** COMPILADO CODIGO ****************"
 	$(JAVAC) $(ALL).java
-		@echo "**************** Levantando servidor ****************"
-	$(JAVAC) $(ALL).java
-	rmiregistry &
-	$(JAVA) $(SERVER_01)
-
+	$(JAVA) Client1 &
+	$(JAVA) Client2 &
