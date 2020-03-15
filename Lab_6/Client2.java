@@ -13,21 +13,12 @@ public class Client2{
       Registry reg =LocateRegistry.getRegistry(host);
       //find remote object in host
       Stack stub = (Stack) reg.lookup("Stack");
-      Integer a=0;
-      Double b=2.5;
-      Character c='a';
-      stub.push(a);
-      stub.push(b);
-      stub.push(c);
-      Object res=(Character)stub.pop();
-      System.out.println("response: " + res);
-      res=(Double)stub.pop()+0.0008;
-      System.out.println("response: " + res);
-      res=((Integer)stub.pop());
-      res=((Integer) res)+9;
+      System.out.println("reviso si la pila esta vacia: " + stub.isEmpty());
+      Object res=stub.top();
       System.out.println("response: " + res);
 
-      System.out.println("response: " + stub.isEmpty());
+      
+      while(true);
     } catch (Exception e) {
       //TODO: handle exception
       System.err.println("Client exception: " + e.toString());

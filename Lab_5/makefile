@@ -26,3 +26,5 @@ run:
 	@echo "**************** COMPILADO CODIGO: $(PROG_01) ****************"
 	$(MPICC) $(PAR_I) $(PROG_01).c -o $(out) -I$(INC)
 	$(MRUN) -np $(NODES) -hostfile $(maq) $(out)
+
+
