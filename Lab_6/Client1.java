@@ -22,7 +22,7 @@ public class Client1{
       stub1.push(a);
       stub1.push(b);
       stub1.push(c);
-      System.out.println("Cliente 1 subio a la pila 1: "+a);
+      System.out.println("\nCliente 1 subio a la pila 1: "+a);
       System.out.println("Cliente 1 subio a la pila 1: "+b);
       System.out.println("Cliente 1 subio a la pila 1: "+c+"\n");
       a=1;
@@ -39,9 +39,9 @@ public class Client1{
       res=(Double)stub2.pop();
       System.out.println("saco "+res+" de la pila 2");
       res=((Integer)stub2.pop());
-      System.out.println("saco "+res+" de la pila 2");
-      System.out.println("reviso si la pila 1 esta vacia: " + stub1.isEmpty());
-      System.out.println("reviso si la pila 2 esta vacia: " + stub2.isEmpty());
+      System.out.println("Cliente 1 saco "+res+" de la pila 2");
+      System.out.println("Cliente 1 reviso si la pila 1 esta vacia: " + stub1.isEmpty());
+      System.out.println("Cliente 1 reviso si la pila 2 esta vacia: " + stub2.isEmpty());
       System.out.println("Cliente 1 espera a que se vacie la pila 1");
       while(!stub1.isEmpty());
     } catch (Exception e) {

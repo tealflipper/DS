@@ -35,11 +35,14 @@ runservers:
 	@echo "**************** COMPILADO CODIGO ****************"
 	$(JAVAC) $(ALL).java
 	@echo "**************** Levantando servidor ****************"
+	rmiregistry &
 	$(JAVA) $(SERVER_01) &
 	$(JAVA) $(SERVER_02) &
 
 run:
 	@echo "**************** COMPILADO CODIGO ****************"
 	$(JAVAC) $(ALL).java
+	@echo "**************** corre programas ****************"
 	$(JAVA) Client1 &
 	$(JAVA) Client2 &
+	@echo ""

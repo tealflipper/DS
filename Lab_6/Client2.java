@@ -13,14 +13,14 @@ public class Client2{
       Registry reg =LocateRegistry.getRegistry(host);
       //find remote object in host
       Stack stub = (Stack) reg.lookup("Stack");
-      System.out.println("reviso si la pila esta vacia: " + stub.isEmpty());
+      System.out.println("\ncliente 2 revisa si la pila esta vacia: " + stub.isEmpty());
       if(stub.isEmpty()){
-        System.out.println("La pila esta vacia");
+        System.out.println("cliente 2: La pila esta vacia");
       }else{
-        System.out.println("Vacio la pila ");
+        System.out.println("cliente 2 vacia la pila ");
         while(!stub.isEmpty()){
         Object res=stub.pop();
-        System.out.println("response: " + res);
+        System.out.println("cliente 2 respuesta: " + res);
         }
       }
 
